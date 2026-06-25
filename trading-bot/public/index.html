@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Paper Trading Bot - Live Dashboard</title>
+<title>SMC AI Trading Bot</title>
 <style>
   :root{ --bg-0:#0b0e11; --bg-1:#11151a; --bg-2:#161b22; --bg-3:#1c222b; --border:#242b35; --text-hi:#ffffff; --text-lo:#7c8794; --text-mid:#aab4c0; --green:#00c9a7; --red:#f6465d; --accent:#f0b90b; }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
@@ -13,14 +13,11 @@
   .header-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:10px; }
   .pair-selector-wrap{ position:relative; flex:1; }
   .pair-select-btn{ display:flex; align-items:center; justify-content:space-between; gap:8px; background:var(--bg-2); border:1px solid var(--border); color:var(--text-hi); border-radius:6px; padding:8px 12px; font-size:14px; font-weight:700; cursor:pointer; width:100%; }
-  .pair-select-btn:active{ background:var(--bg-3); }
-  .pair-dropdown{ position:absolute; top:100%; left:0; right:0; background:var(--bg-2); border:1px solid var(--border); border-radius:6px; margin-top:4px; max-height:220px; overflow-y:auto; z-index:1000; display:none; box-shadow:0 4px 12px rgba(0,0,0,0.4); }
+  .pair-dropdown{ position:absolute; top:100%; left:0; right:0; background:var(--bg-2); border:1px solid var(--border); border-radius:6px; margin-top:4px; max-height:260px; overflow-y:auto; z-index:1000; display:none; box-shadow:0 4px 12px rgba(0,0,0,0.4); }
   .pair-dropdown.active{ display:block; }
-  .pair-dropdown-group{ padding:6px 0; }
-  .pair-dropdown-label{ font-size:10px; color:var(--text-lo); text-transform:uppercase; padding:6px 12px; font-weight:700; }
   .pair-option{ padding:8px 12px; font-size:12px; color:var(--text-mid); cursor:pointer; border:none; background:none; width:100%; text-align:left; font-family:inherit; }
   .pair-option:hover{ background:var(--bg-3); color:var(--text-hi); }
-  .pair-option.active{ color:var(--accent); background:rgba(240,185,11,.1); font-weight:700; }
+  .clock-pill{ font-size:11px; color:var(--accent); padding:6px 10px; border:1px solid var(--border); border-radius:20px; background:var(--bg-2); white-space:nowrap; font-weight:700; }
   .switch { position: relative; display: inline-block; width: 46px; height: 24px; flex:0 0 auto; }
   .switch input { opacity: 0; width: 0; height: 0; }
   .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--red); transition: .3s; border-radius: 24px; }
@@ -30,64 +27,38 @@
   .conn-pill{ display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-lo); padding:6px 10px; border:1px solid var(--border); border-radius:20px; background:var(--bg-2); white-space:nowrap; }
   .dot{ width:6px; height:6px; border-radius:50%; background:var(--text-lo); flex:0 0 auto; }
   .dot.live{ background:var(--green); box-shadow:0 0 6px var(--green); }
-  .dot.down{ background:var(--red); }
   .stat-strip{ display:flex; gap:12px; font-size:11px; color:var(--text-lo); }
   .stat-chip b{ color:var(--text-mid); font-weight:700; margin-left:4px; }
-  .stat-chip.win b{ color:var(--green); }
-  .stat-chip.loss b{ color:var(--red); }
+  .stat-chip.win b{ color:var(--green); } .stat-chip.loss b{ color:var(--red); }
   .price-section{ flex:0 0 auto; padding:18px 16px; background:var(--bg-1); border-bottom:1px solid var(--border); text-align:center; }
   .live-price{ font-size:52px; font-weight:900; letter-spacing:-0.02em; font-variant-numeric:tabular-nums; color:var(--text-hi); margin:0; }
-  .chart-panel{ flex:0 0 40vh; position:relative; background:#0c0e12; border-bottom:1px solid var(--border); min-height:0; }
+  .chart-panel{ flex:0 0 35vh; position:relative; background:#0c0e12; border-bottom:1px solid var(--border); min-height:0; }
   .chart-panel iframe{ width:100%; height:100%; border:0; display:block; }
   .trading-panel{ flex:1 1 auto; overflow-y:auto; padding:14px 16px 16px; background:var(--bg-0); }
   .market-structure{ background:var(--bg-2); border:1px solid var(--border); border-radius:10px; padding:12px; margin-bottom:12px; }
   .structure-title{ font-size:11px; color:var(--accent); text-transform:uppercase; font-weight:700; margin-bottom:8px; }
   .structure-text{ font-size:13px; line-height:1.6; color:var(--text-mid); }
-  .logic-badge{ display:flex; align-items:center; justify-content:center; gap:8px; background:linear-gradient(90deg, rgba(0,201,167,.08), rgba(246,70,93,.08)); border:1px solid var(--border); border-radius:8px; padding:8px 10px; margin-bottom:12px; font-size:10px; color:var(--text-mid); font-weight:700; }
-  .logic-badge .tp{ color:var(--green); } .logic-badge .sl{ color:var(--red); } .logic-badge .sep{ color:var(--text-lo); opacity:.5; }
   .position-section{ background:var(--bg-1); border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:12px; }
   .position-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
   .side-tag{ font-size:12px; font-weight:800; padding:6px 12px; border-radius:6px; }
   .side-tag.long{ color:var(--green); background:rgba(0,201,167,.15); } .side-tag.short{ color:var(--red); background:rgba(246,70,93,.15); } .side-tag.idle{ color:var(--text-lo); background:var(--bg-3); }
   .lev-tag{ font-size:11px; color:var(--accent); font-weight:700; background:rgba(240,185,11,.15); padding:4px 10px; border-radius:5px; }
-  .pnl-display{ display:flex; gap:16px; margin-bottom:12px; }
-  .pnl-col{ flex:1; } .pnl-label{ font-size:11px; color:var(--text-lo); text-transform:uppercase; margin-bottom:4px; }
-  .pnl-value{ font-size:22px; font-weight:800; font-variant-numeric:tabular-nums; color:var(--text-hi); }
-  .pnl-value.profit{ color:var(--green); } .pnl-value.loss{ color:var(--red); } .pnl-value.neutral{ color:var(--text-hi); }
-  .pnl-roi{ font-size:12px; font-weight:600; margin-top:2px; color:var(--text-lo); }
   .levels-grid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:12px; }
   .level-cell{ background:var(--bg-2); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center; }
-  .level-label{ font-size:10px; color:var(--text-lo); text-transform:uppercase; margin-bottom:4px; }
   .level-value{ font-size:13px; font-weight:700; font-variant-numeric:tabular-nums; color:var(--text-hi); }
   .level-cell.tp .level-value{ color:var(--green); } .level-cell.sl .level-value{ color:var(--red); } .level-cell.entry .level-value{ color:var(--accent); }
-  .tp-sl-progress{ background:var(--bg-2); border:1px solid var(--border); border-radius:8px; padding:10px; }
-  .progress-label{ font-size:10px; color:var(--text-lo); text-transform:uppercase; margin-bottom:6px; }
-  .progress-row{ display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px; }
-  .progress-bar{ height:6px; background:var(--bg-3); border-radius:3px; overflow:hidden; margin-top:4px; }
-  .progress-fill{ height:100%; background:var(--accent); transition:width 0.2s ease; }
-  .thinking-indicator{ display:none; background:var(--bg-2); border:1px solid rgba(240,185,11,.3); border-radius:8px; padding:10px; margin-bottom:12px; text-align:center; }
-  .thinking-indicator.active{ display:block; }
-  .thinking-text{ font-size:12px; color:var(--accent); font-weight:600; margin-bottom:4px; }
-  .thinking-timer{ font-size:16px; font-weight:700; color:var(--accent); }
-  .history-section{ margin-top:12px; }
-  .section-title{ font-size:11px; color:var(--text-lo); text-transform:uppercase; margin-bottom:8px; font-weight:700; }
-  .history-list{ background:var(--bg-1); border:1px solid var(--border); border-radius:8px; max-height:350px; overflow-y:auto; }
+  .history-list{ background:var(--bg-1); border:1px solid var(--border); border-radius:8px; max-height:300px; overflow-y:auto; }
   .history-row{ display:flex; flex-direction:column; gap:6px; font-size:12px; padding:10px; border-bottom:1px solid var(--border); color:var(--text-mid); }
-  .history-main{ display:flex; justify-content:space-between; align-items:center; }
   .history-side.long{ color:var(--green); } .history-side.short{ color:var(--red); }
   .history-pnl.win{ color:var(--green); } .history-pnl.loss{ color:var(--red); }
   .history-sub{ display:flex; justify-content:space-between; font-size:11px; color:var(--text-lo); }
-  .history-empty{ padding:14px; text-align:center; color:var(--text-lo); font-size:12px; }
-  .tool-row { display: flex; gap: 10px; margin-top: 12px; }
-  .tool-btn { flex: 1; background: var(--bg-2); border: 1px solid var(--border); color: var(--text-mid); border-radius: 8px; padding: 10px; font-size: 12px; font-weight: 700; cursor: pointer; }
-  .tool-btn.reset { color: var(--red); border-color: rgba(246,70,93,0.3); }
-  .toggle-row { display: flex; align-items: center; justify-content: space-between; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; font-size: 11px; color: var(--text-mid); font-weight: 700; text-transform: uppercase; }
-  .mini-switch { position: relative; display: inline-block; width: 36px; height: 20px; }
-  .mini-switch input { opacity: 0; width: 0; height: 0; }
-  .mini-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--bg-3); transition: .3s; border-radius: 20px; }
-  .mini-slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
-  input:checked + .mini-slider { background-color: var(--green); }
-  input:checked + .mini-slider:before { transform: translateX(16px); }
+  .tool-btn { width:100%; background: var(--bg-2); border: 1px solid var(--border); color: var(--red); border-radius: 8px; padding: 10px; font-size: 12px; font-weight: 700; cursor: pointer; margin-top: 12px;}
+  .pending-banner{ display:none; background:rgba(240,185,11,.08); border:1px solid rgba(240,185,11,.35); border-radius:6px; padding:8px; margin-bottom:10px; text-align:center; font-size:12px; color:var(--accent); font-weight:700;}
+  .pending-banner.active{ display:block; }
+  .chart-ai-btn { position: fixed; bottom: 20px; right: 20px; z-index: 999; background: var(--accent); color: var(--bg-0); border: none; border-radius: 30px; padding: 10px 18px; font-size: 14px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px rgba(240, 185, 11, 0.4); }
+  .chart-overlay { display: none; position: fixed; inset: 0; z-index: 1001; background: var(--bg-1); flex-direction: column; }
+  .chart-overlay.active { display: flex; }
+  .chart-overlay-header { display: flex; justify-content: space-between; padding: 12px; background: var(--bg-2); border-bottom: 1px solid var(--border); font-size: 14px; color: var(--accent); font-weight: 700; }
 </style>
 </head>
 <body>
@@ -96,20 +67,12 @@
   <div class="header-panel">
     <div class="header-top">
       <div class="pair-selector-wrap">
-        <button class="pair-select-btn" id="pairSelectBtn">
-          <span id="pairDisplay">HYPEUSDT</span>
-          <span class="arrow">▼</span>
-        </button>
+        <button class="pair-select-btn" id="pairSelectBtn"><span id="pairDisplay">HYPEUSDT</span> <span>▼</span></button>
         <div class="pair-dropdown" id="pairDropdown"></div>
       </div>
-      <label class="switch" title="Start/Stop Bot">
-        <input type="checkbox" id="botToggle" checked>
-        <span class="slider"></span>
-      </label>
-      <div class="conn-pill" id="connPill">
-        <span class="dot" id="connDot"></span>
-        <span id="connText">Connecting…</span>
-      </div>
+      <label class="switch"><input type="checkbox" id="botToggle" checked><span class="slider"></span></label>
+      <div class="conn-pill"><span class="dot" id="connDot"></span><span id="connText">Connecting…</span></div>
+      <div class="clock-pill" id="clock">--:--:--</div>
     </div>
     <div class="stat-strip">
       <div class="stat-chip">Trades <b id="statTrades">0</b></div>
@@ -119,91 +82,67 @@
     </div>
   </div>
 
-  <div class="price-section">
-    <p class="live-price" id="livePrice">$0.00</p>
-  </div>
-
-  <div class="chart-panel">
-    <iframe id="tvFrame" allowtransparency="true" frameborder="0"></iframe>
-  </div>
+  <div class="price-section"><p class="live-price" id="livePrice">$0.00</p></div>
+  
+  <div class="chart-panel"><iframe id="tvFrame" allowtransparency="true" frameborder="0"></iframe></div>
 
   <div class="trading-panel">
-    <div class="logic-badge">
-      <span class="rr">1:3 R:R</span>
-      <span class="sep">|</span>
-      <span class="tp">TP +$6</span>
-      <span class="sep">|</span>
-      <span class="sl">SL -$2</span>
-    </div>
-
-    <div class="toggle-row">
-      <span>Advanced Trailing Stop</span>
-      <label class="mini-switch">
-        <input type="checkbox" id="trailingToggle">
-        <span class="mini-slider"></span>
-      </label>
-    </div>
-
     <div class="market-structure">
-      <div class="structure-title">📊 AI Market Strategy (15m)</div>
+      <div class="structure-title">📊 SMC AI Strategy (15m)</div>
       <div class="structure-text" id="structureText">Connecting to server...</div>
     </div>
+
+    <div class="pending-banner" id="pendingBanner">⏳ LIMIT ORDER PENDING</div>
 
     <div class="position-section">
       <div class="position-header">
         <span class="side-tag idle" id="sideTag">NO POSITION</span>
         <span class="lev-tag">2x Leverage</span>
       </div>
-      <div class="pnl-display">
-        <div class="pnl-col"><div class="pnl-label">PNL</div><div class="pnl-value neutral" id="pnlValue">$0.00</div></div>
-        <div class="pnl-col"><div class="pnl-label">ROI</div><div class="pnl-roi" id="roiValue">0.00%</div></div>
-      </div>
       <div class="levels-grid">
-        <div class="level-cell entry"><div class="level-label">Entry</div><div class="level-value" id="mEntry">—</div></div>
-        <div class="level-cell tp"><div class="level-label">TP (+$6)</div><div class="level-value" id="mTP">—</div></div>
-        <div class="level-cell sl"><div class="level-label">SL (-$2)</div><div class="level-value" id="mSL">—</div></div>
+        <div class="level-cell entry"><div>Entry</div><div class="level-value" id="mEntry">—</div></div>
+        <div class="level-cell tp"><div>TP (+$6)</div><div class="level-value" id="mTP">—</div></div>
+        <div class="level-cell sl"><div>SL (-$2)</div><div class="level-value" id="mSL">—</div></div>
       </div>
-      <div class="tp-sl-progress">
-        <div class="progress-label">Take Profit Progress</div>
-        <div class="progress-row"><span>Target: +$6</span><span id="tpProgress">$0.00 / $6.00</span></div>
-        <div class="progress-bar"><div class="progress-fill" id="tpFill" style="width:0%"></div></div>
-        <div class="progress-label" style="margin-top:10px;">Stop Loss Progress</div>
-        <div class="progress-row"><span>Limit: -$2</span><span id="slProgress">$0.00 / $2.00</span></div>
-        <div class="progress-bar"><div class="progress-fill" id="slFill" style="background:var(--red); width:0%"></div></div>
-      </div>
-    </div>
-
-    <div class="thinking-indicator" id="thinkingInd">
-      <div class="thinking-text">Analyzing Market Structure & Signals</div>
-      <div class="thinking-timer" id="thinkingTimer">60s</div>
     </div>
 
     <div class="history-section">
-      <div class="section-title">Trade History</div>
-      <div class="history-list" id="historyList"><div class="history-empty">No closed trades yet</div></div>
+      <div style="font-size:11px; color:var(--text-lo); text-transform:uppercase; margin-bottom:8px; font-weight:700;">Trade History</div>
+      <div class="history-list" id="historyList"><div style="padding:14px; text-align:center; color:var(--text-lo); font-size:12px;">No closed trades yet</div></div>
     </div>
-
-    <div class="tool-row">
-      <button class="tool-btn reset" id="resetBtn">Reset All</button>
-    </div>
+    <button class="tool-btn" id="resetBtn">Reset All</button>
   </div>
+</div>
+
+<button class="chart-ai-btn" id="chartAiBtn">🤖 AI Chart</button>
+<div class="chart-overlay" id="chartOverlay">
+  <div class="chart-overlay-header"><span>AI Chart Analysis</span><button id="closeChartOverlay" style="background:none; border:none; color:var(--text-lo); font-size:18px;">✕</button></div>
+  <iframe id="overlayTvFrame" allowtransparency="true" frameborder="0" style="flex:1; width:100%; border:0;"></iframe>
 </div>
 
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
-const PAIRS = {
-    major: [{ symbol:"btcusdt", display:"BTCUSDT", tv:"BINANCE:BTCUSDT.P" }, { symbol:"ethusdt", display:"ETHUSDT", tv:"BINANCE:ETHUSDT.P" }],
-    alt: [{ symbol:"hypeusdt", display:"HYPEUSDT", tv:"BINANCE:HYPEUSDT.P" }]
-};
+const PAIRS = [
+    { symbol:"btcusdt", display:"BTCUSDT" }, { symbol:"ethusdt", display:"ETHUSDT" }, { symbol:"solusdt", display:"SOLUSDT" },
+    { symbol:"bnbusdt", display:"BNBUSDT" }, { symbol:"xrpusdt", display:"XRPUSDT" }, { symbol:"dogeusdt", display:"DOGEUSDT" },
+    { symbol:"adausdt", display:"ADAUSDT" }, { symbol:"avaxusdt", display:"AVAXUSDT" }, { symbol:"linkusdt", display:"LINKUSDT" },
+    { symbol:"dotusdt", display:"DOTUSDT" }, { symbol:"maticusdt", display:"MATICUSDT" }, { symbol:"ltcusdt", display:"LTCUSDT" },
+    { symbol:"bchusdt", display:"BCHUSDT" }, { symbol:"atomusdt", display:"ATOMUSDT" }, { symbol:"uniusdt", display:"UNIUSDT" },
+    { symbol:"nearusdt", display:"NEARUSDT" }, { symbol:"aptusdt", display:"APTUSDT" }, { symbol:"filusdt", display:"FILUSDT" },
+    { symbol:"arbusdt", display:"ARBUSDT" }, { symbol:"opusdt", display:"OPUSDT" }, { symbol:"injusdt", display:"INJUSDT" },
+    { symbol:"suiusdt", display:"SUIUSDT" }, { symbol:"sei", display:"SEIUSDT" }, { symbol:"tiausdt", display:"TIAUSDT" },
+    { symbol:"shibusdt", display:"SHIBUSDT" }, { symbol:"pepeusdt", display:"PEPEUSDT" }, { symbol:"flokiusdt", display:"FLOKIUSDT" },
+    { symbol:"bonkusdt", display:"BONKUSDT" }, { symbol:"wifusdt", display:"WIFUSDT" }, { symbol:"hypeusdt", display:"HYPEUSDT" }
+]; // Server handles the full 100, frontend just needs a few for display logic
 
 const el = {
     botToggle: document.getElementById('botToggle'),
-    trailingToggle: document.getElementById('trailingToggle'),
     pairSelectBtn: document.getElementById('pairSelectBtn'),
     pairDisplay: document.getElementById('pairDisplay'),
     pairDropdown: document.getElementById('pairDropdown'),
     connDot: document.getElementById('connDot'),
     connText: document.getElementById('connText'),
+    clock: document.getElementById('clock'),
     statTrades: document.getElementById('statTrades'),
     statWins: document.getElementById('statWins'),
     statLosses: document.getElementById('statLosses'),
@@ -212,119 +151,108 @@ const el = {
     tvFrame: document.getElementById('tvFrame'),
     structureText: document.getElementById('structureText'),
     sideTag: document.getElementById('sideTag'),
-    pnlValue: document.getElementById('pnlValue'),
-    roiValue: document.getElementById('roiValue'),
     mEntry: document.getElementById('mEntry'),
     mTP: document.getElementById('mTP'),
     mSL: document.getElementById('mSL'),
-    tpProgress: document.getElementById('tpProgress'),
-    slProgress: document.getElementById('slProgress'),
-    tpFill: document.getElementById('tpFill'),
-    slFill: document.getElementById('slFill'),
-    thinkingInd: document.getElementById('thinkingInd'),
-    thinkingTimer: document.getElementById('thinkingTimer'),
     historyList: document.getElementById('historyList'),
-    resetBtn: document.getElementById('resetBtn')
+    resetBtn: document.getElementById('resetBtn'),
+    pendingBanner: document.getElementById('pendingBanner'),
+    chartAiBtn: document.getElementById('chartAiBtn'),
+    chartOverlay: document.getElementById('chartOverlay'),
+    overlayTvFrame: document.getElementById('overlayTvFrame'),
+    closeChartOverlay: document.getElementById('closeChartOverlay')
 };
 
 const fmtUSD = (n) => "$" + Math.abs(n).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
 const fmtPrice = (n) => isNaN(n) ? "—" : "$" + n.toFixed(2);
 
-// Connect to the Node.js server (We will update this URL in Step 3)
 const socket = io(); 
 
-socket.on('connect', () => {
-    el.connDot.className = "dot live";
-    el.connText.textContent = "Live (Server)";
+// Build Dropdown
+let ddHtml = '';
+PAIRS.forEach(p => ddHtml += `<button class="pair-option" data-symbol="${p.symbol}">${p.display}</button>`);
+el.pairDropdown.innerHTML = ddHtml;
+
+el.pairSelectBtn.addEventListener('click', () => el.pairDropdown.classList.toggle('active'));
+el.pairDropdown.querySelectorAll('.pair-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+        socket.emit('switch_pair', btn.dataset.symbol);
+        el.pairDropdown.classList.remove('active');
+    });
 });
 
-socket.on('disconnect', () => {
-    el.connDot.className = "dot down";
-    el.connText.textContent = "Disconnected";
-});
+socket.on('connect', () => { el.connDot.className = "dot live"; el.connText.textContent = "Live"; });
+socket.on('disconnect', () => { el.connDot.className = "dot"; el.connText.textContent = "Disconnected"; });
+socket.on('time_update', (time) => { el.clock.textContent = time; });
 
 socket.on('state', (s) => {
-    // Update Header
     el.pairDisplay.textContent = s.currentPair.display;
     el.statTrades.textContent = s.tradesCount;
     el.statWins.textContent = s.wins;
     el.statLosses.textContent = s.losses;
     el.statBalance.textContent = fmtUSD(s.balance);
     el.botToggle.checked = s.botActive;
-    el.trailingToggle.checked = s.trailingActive;
 
-    // Update Chart
-    if(el.tvFrame.src.indexOf(s.currentPair.tv) === -1) {
-        el.tvFrame.src = `https://s.tradingview.com/widgetembed/?symbol=${s.currentPair.tv}&interval=1&theme=dark&style=1&hideideas=1&hidesidetoolbar=1&hidetoptoolbar=1`;
+    if(el.tvFrame.src.indexOf(s.currentPair.symbol.toUpperCase()) === -1) {
+        el.tvFrame.src = `https://s.tradingview.com/widgetembed/?symbol=BINANCE:${s.currentPair.symbol.toUpperCase()}P&interval=1&theme=dark&style=1&hideideas=1&hidesidetoolbar=1&hidetoptoolbar=1`;
     }
 
-    // Update Price & AI
     el.livePrice.textContent = fmtPrice(s.lastPrice);
     el.livePrice.style.color = s.lastPrice > s.prevTickPrice ? "var(--green)" : (s.lastPrice < s.prevTickPrice ? "var(--red)" : "var(--text-hi)");
     el.structureText.textContent = s.structureText;
 
-    // Update Thinking
-    if(s.thinking && s.botActive) {
-        el.thinkingInd.classList.add('active');
-        el.thinkingTimer.textContent = s.thinkSecondsLeft + "s";
+    // Pending Limit Order UI
+    if (s.pendingEntry) {
+        el.pendingBanner.classList.add('active');
+        el.pendingBanner.textContent = `⏳ LIMIT ORDER PENDING: ${s.pendingEntry.side} at ${fmtPrice(s.pendingEntry.price)}`;
     } else {
-        el.thinkingInd.classList.remove('active');
+        el.pendingBanner.classList.remove('active');
     }
 
-    // Update Position
     if(s.position) {
         const p = s.position;
-        const pnl = p.side === "LONG" ? (s.lastPrice - p.entry) * p.qty : (p.entry - s.lastPrice) * p.qty;
-        const roi = (pnl / p.stakedAmount) * 100;
-
         el.sideTag.textContent = p.side;
         el.sideTag.className = "side-tag " + (p.side === "LONG" ? "long" : "short");
-        el.mEntry.textContent = fmtPrice(p.entry);
+        el.mEntry.textContent = `${fmtPrice(p.entry)} (${p.entryTime})`;
         el.mTP.textContent = fmtPrice(p.tpPrice);
         el.mSL.textContent = fmtPrice(p.slPrice);
-
-        el.pnlValue.textContent = (pnl > 0 ? "+" : pnl < 0 ? "-" : "") + fmtUSD(pnl);
-        el.pnlValue.className = "pnl-value " + (pnl > 0 ? "profit" : pnl < 0 ? "loss" : "neutral");
-        el.roiValue.textContent = (roi > 0 ? "+" : "") + roi.toFixed(2) + "%";
-
-        const tpPnl = pnl > 0 ? pnl : 0;
-        el.tpFill.style.width = Math.min(100, (tpPnl / p.tpDollars) * 100) + "%";
-        el.tpProgress.textContent = fmtUSD(tpPnl) + " / " + fmtUSD(p.tpDollars);
-
-        const slPnl = pnl < 0 ? Math.abs(pnl) : 0;
-        el.slFill.style.width = Math.min(100, (slPnl / p.slDollars) * 100) + "%";
-        el.slProgress.textContent = fmtUSD(slPnl) + " / " + fmtUSD(p.slDollars);
     } else {
         el.sideTag.textContent = "NO POSITION";
         el.sideTag.className = "side-tag idle";
         el.mEntry.textContent = "—"; el.mTP.textContent = "—"; el.mSL.textContent = "—";
-        el.pnlValue.textContent = "$0.00"; el.pnlValue.className = "pnl-value neutral";
-        el.roiValue.textContent = "0.00%";
-        el.tpFill.style.width = "0%"; el.slFill.style.width = "0%";
     }
 
-    // Update History
     if(s.tradeHistoryArr.length === 0) {
-        el.historyList.innerHTML = '<div class="history-empty">No closed trades yet</div>';
+        el.historyList.innerHTML = '<div style="padding:14px; text-align:center; color:var(--text-lo); font-size:12px;">No closed trades yet</div>';
     } else {
         el.historyList.innerHTML = "";
         for (let i = s.tradeHistoryArr.length - 1; i >= 0; i--) {
             const t = s.tradeHistoryArr[i];
             const row = document.createElement('div');
             row.className = 'history-row';
-            row.innerHTML = `<div class="history-main"><span class="history-side ${t.side === 'LONG' ? 'long' : 'short'}">${t.side}</span><span class="history-pnl ${t.won ? 'win' : 'loss'}">${t.won ? '+' : '-'}${fmtUSD(t.amt)}</span></div><div class="history-sub"><span>Entry: ${fmtPrice(t.entry)}</span><span>Exit: ${fmtPrice(t.exit)}</span></div>`;
+            row.innerHTML = `<div style="display:flex; justify-content:space-between;">
+                <span class="history-side ${t.side === 'LONG' ? 'long' : 'short'}">${t.side}</span>
+                <span class="history-pnl ${t.won ? 'win' : 'loss'}">${t.won ? '+' : '-'}${fmtUSD(t.amt)}</span>
+            </div>
+            <div class="history-sub"><span>Entry: ${fmtPrice(t.entry)} (${t.entryTime})</span></div>
+            <div class="history-sub"><span>Exit: ${fmtPrice(t.exit)} (${t.exitTime})</span></div>`;
             el.historyList.appendChild(row);
         }
     }
 });
 
-// Controls
 el.botToggle.addEventListener('change', () => socket.emit('toggle_bot'));
-el.trailingToggle.addEventListener('change', () => socket.emit('toggle_trailing'));
 el.resetBtn.addEventListener('click', () => { if(confirm("Reset all stats?")) socket.emit('reset_all'); });
 
-el.pairSelectBtn.addEventListener('click', () => el.pairDropdown.classList.toggle('active'));
-// Add logic to build pair dropdown and emit switch_pair
+el.chartAiBtn.addEventListener('click', () => {
+    const sym = el.pairDisplay.textContent;
+    el.overlayTvFrame.src = `https://s.tradingview.com/widgetembed/?symbol=BINANCE:${sym}P&interval=15&theme=dark&style=1&hideideas=1`;
+    el.chartOverlay.classList.add('active');
+});
+el.closeChartOverlay.addEventListener('click', () => {
+    el.chartOverlay.classList.remove('active');
+    el.overlayTvFrame.src = "";
+});
 </script>
 </body>
 </html>
