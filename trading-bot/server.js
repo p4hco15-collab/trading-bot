@@ -73,14 +73,20 @@ function computeBias(closes){ const ema9=computeEMA(closes,9); const ema21=compu
 
 async function fetchKlines(symbol, interval='15m', limit=100){
     const futUrl = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol.toUpperCase()}&interval=${interval}&limit=${limit}`;
+    const options = {
+        headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
+            'Accept': 'application/json'
+        }
+    };
     try {
-        const res = await fetch(futUrl);
+        const res = await fetch(futUrl, options);
         if(!res.ok) throw new Error("Futures API failed");
         const data = await res.json();
         return data.map(row => ({ o: parseFloat(row[1]), h: parseFloat(row[2]), l: parseFloat(row[3]), c: parseFloat(row[4]) }));
     } catch(e) {
         const spotUrl = `https://api.binance.com/api/v3/klines?symbol=${symbol.toUpperCase()}&interval=${interval}&limit=${limit}`;
-        const spotRes = await fetch(spotUrl);
+        const spotRes = await fetch(spotUrl, options);
         if(!spotRes.ok) throw new Error("Both APIs failed");
         const spotData = await spotRes.json();
         return spotData.map(row => ({ o: parseFloat(row[1]), h: parseFloat(row[2]), l: parseFloat(row[3]), c: parseFloat(row[4]) }));
